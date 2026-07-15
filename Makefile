@@ -3,7 +3,7 @@ CFLAGS = -Wall -Wextra -g
 
 SRCS = $(wildcard *.c)
 OBJS = $(SRCS:.c=.o)
-TARGET = libC.a
+TARGET = libads.a
 
 .PHONY: all clean
 
