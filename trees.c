@@ -54,6 +54,8 @@ static void post_order(node *root);
 static void pre_order(node *root);
 static void in_order(node *root);
 static node *bst_recursive_search (node *leaf, int key);
+static int recursive_size_count(node *leaf);
+
 
 /* alloc first node and return it, might return null if allocations problems*/
 node * mkbst(int key, int value){
@@ -317,11 +319,30 @@ node *bst_max(node *leaf){
   return root;
 }
 
+/*finds the size recurring on the whole ree adding 1 for each node it passes*/
+int bst_size(node *leaf){
+  if (!leaf){
+    return 0;
+  }
+  node *root = find_root(leaf);
+  return recursive_size_count(root);
+}
+
+static int recursive_size_count(node *leaf){
+  if(!leaf)
+    return 0;
+  return recursive_size_count(leaf->left) + recursive_size_count(leaf->right) + 1;
+}
+
+
+
 
 
 //-------------------------------------------------------
 
-
+/*
+ * find root and than cakk the recursive research, retourns a node
+ */
 node *bst_search (node *leaf, int key){
   if (!leaf){
     fprintf(stderr, "errore: nodo invalido");
@@ -353,7 +374,7 @@ static node * bst_recursive_search (node *leaf, int key){
  * shitty code this make me feel so stupd this is 3 hours of work and 2 refactor :(
  */
 
-int R_rotation (node *leaf){
+int L_rotation (node *leaf){
   if (!leaf){
     fprintf(stderr, "errore: nodo invalido");
     return -1;
@@ -384,7 +405,7 @@ int R_rotation (node *leaf){
   return 0;
 }
 
-int L_rotation (node *leaf){
+int R_rotation (node *leaf){
   if (!leaf){
     fprintf(stderr, "errore: nodo invalido");
     return -1;

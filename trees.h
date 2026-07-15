@@ -24,6 +24,7 @@ int read_in_order(node * leaf);
 
 node *bst_min(node *leaf);
 node *bst_max(node *leaf);
+int bst_size(node *leaf);
 
 node * bst_search(node *leaf, int key);
 

@@ -46,6 +46,7 @@ A BST with parent pointers that behaves like an integer map: each node holds a `
 | `node * bst_min(node *leaf)` | Returns the node with the smallest key in the tree. |
 | `node * bst_max(node *leaf)` | Returns the node with the largest key in the tree. |
 | `node * find_successor(node *leaf)` | Returns the in order successor of a node, or `NULL` if there is none. |
+| `int bst_size(node *leaf)` | Returns the number of nodes in the tree, `0` for an empty tree. |
 
 All query functions accept any node of the tree: they climb to the root on their own before descending.
 
@@ -61,16 +62,16 @@ All query functions accept any node of the tree: they climb to the root on their
 
 | Function | Description |
 |---|---|
-| `int R_rotation(node *leaf)` | Rotates the node with its right child, which takes its place. |
-| `int L_rotation(node *leaf)` | Rotates the node with its left child, which takes its place. |
+| `int L_rotation(node *leaf)` | Left rotation: the right child of the node is promoted and takes its place. |
+| `int R_rotation(node *leaf)` | Right rotation: the left child of the node is promoted and takes its place. |
 
-Both rotations preserve the BST ordering and keep every parent pointer consistent, including when the rotation happens at the root. Naming note: here the letter refers to the child being promoted, so `R_rotation` corresponds to what most textbooks call a left rotation, and vice versa.
+The names follow the textbook convention, the letter is the direction the rotated node moves. Both rotations preserve the BST ordering and keep every parent pointer consistent, including when the rotation happens at the root.
 
 ## Roadmap
 
 The project moves without deadlines, on purpose. What is planned:
 
 * Traversals with an optional output buffer, so the pairs can be collected into arrays instead of printed to stdout.
-* `tree_size` and `tree_height`.
+* `tree_height`.
 * A CI/CD section, with the test suite running on every push.
 * A calm pass of review, refactoring where needed, and optimization over all the existing code. No rush.
