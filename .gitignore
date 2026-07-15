@@ -1,0 +1,12 @@
+# build
+*.o
+*.a
+
+# binari di test
+*.out
+rot_test*
+
+# editor / tooling
+*.swp
+.cache/
+compile_commands.json
