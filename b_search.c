@@ -23,8 +23,8 @@ int b_search (int * arr, int s, int n, int key){
   if (arr[m] == key)
     return m;
   if (arr[m] > key)
-    return b_search(arr, s, m, key);
+    return b_search(arr, s, m-1, key);
   else 
-    return b_search(arr, m, n, key);
+    return b_search(arr, m+1, n, key);
 }
 

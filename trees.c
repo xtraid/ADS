@@ -128,9 +128,13 @@ int rm_leaf(node * leaf){
   if (leaf == NULL)
     return -1;
   if (leaf->left || leaf->right){
-    free(leaf);
     return -1;
   }
+  if (leaf->parent == NULL){
+    free(leaf);
+    return 0;
+  }
+
   if (leaf->parent->left == leaf)
     leaf->parent->left = NULL;
   else
@@ -154,6 +158,12 @@ node *bst_drop_leaf(node *targhet){
       L_rotation(targhet);
     else
       R_rotation(targhet);
+  }
+  if(!targhet->parent && !targhet->left && !targhet->right){
+    if (rm_leaf(targhet) != 0){
+      fprintf(stderr, "error: rm_leaf failed");
+    }
+    return NULL;
   }
   node *new_root = find_root(targhet);
   if (rm_leaf(targhet) != 0){
