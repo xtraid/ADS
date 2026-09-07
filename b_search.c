@@ -22,7 +22,7 @@ int b_search (int * arr, int s, int n, int key){
   int m = (s+n) / 2;
   if (arr[m] == key)
     return m;
-  if (arr[m] < key)
+  if (arr[m] > key)
     return b_search(arr, s, m, key);
   else 
     return b_search(arr, m, n, key);

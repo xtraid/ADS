@@ -49,6 +49,7 @@
 
 /* funzioni helper*/
 static node *find_root(node *n);
+static int rm_leaf(node * leaf);
 static void post_order_free(node *root);
 static void post_order(node *root);
 static void pre_order(node *root);
@@ -121,78 +122,47 @@ int bst_insert(node *parent, int key, int value){
   }
 }
 
+
+/* tool: removes a leaf if and only if it doesn't hav children */
 int rm_leaf(node * leaf){
   if (leaf == NULL)
-    return 0;
-  if (leaf->parent == NULL){
-    free(leaf);
-    return 0;
-  }
-  if (leaf->left == NULL && leaf->right == NULL){
-    if(leaf->parent->key > leaf->key){
-      leaf->parent->left = NULL; 
-      free(leaf);
-      return 0;
-    }
-    else{
-      leaf->parent->right = NULL;
-      free(leaf);
-      return 0;
-    }
-  }
-  if (leaf->left == NULL){
-    if(leaf->parent->key > leaf->key){
-      leaf->parent->left = leaf->right;
-      leaf->right->parent = leaf->parent;
-      free(leaf);
-      return 0;
-    }
-    else{
-      leaf->parent->right = leaf->right;
-      leaf->right->parent = leaf->parent;
-      free(leaf);
-      return 0;
-    }
-  }
-  if (leaf->right == NULL){
-    if(leaf->parent->key > leaf->key){
-      leaf->parent->left = leaf->left; 
-      leaf->left->parent = leaf->parent; 
-      free(leaf);
-      return 0;
-    }
-    else{
-      leaf->parent->right = leaf->left; 
-      leaf->left->parent = leaf->parent; 
-      free(leaf);
-      return 0;
-    }
-  }
-  node *succ = find_successor(leaf); 
-  if(succ == NULL)
     return -1;
-  succ->left = leaf->left;
-  if (succ !=leaf->right){
-    succ->parent->left = succ->right;
-    if (succ->right != NULL)
-      succ->right->parent = succ->parent;
-    succ->right = leaf->right;
-    succ->right->parent = succ;
-  }
-  succ->parent = leaf->parent;
-  leaf->left->parent = succ;
-  if (leaf->parent->key > leaf->key){
-    leaf->parent->left = succ;
+  if (leaf->left || leaf->right){
     free(leaf);
-    return 0;
+    return -1;
   }
-  else{
-    leaf->parent->right = succ;
-    free(leaf);
-    return 0;
-  }
-
+  if (leaf->parent->left == leaf)
+    leaf->parent->left = NULL;
+  else
+    leaf->parent->right = NULL;
+  free(leaf);
+  return 0;
 }
+
+/*
+ * i need to ask to the bst to drop the node:
+ * drop leaf moves the leaf down until it doesn't have any more children and than 
+ * calls the helper rm_leaf
+ * :) happy refactor
+ */
+node *bst_drop_leaf(node *targhet){
+  if (!targhet){
+    return NULL;
+  }
+  while (targhet->left || targhet->right){
+    if (targhet->right)
+      L_rotation(targhet);
+    else
+      R_rotation(targhet);
+  }
+  node *new_root = find_root(targhet);
+  if (rm_leaf(targhet) != 0){
+    fprintf(stderr, "error: rm_leaf failed");
+  }
+  return new_root;
+}
+
+
 /*trova il sucessore overo il minimo figlio destro, 
  * nel caso in cui non ci siano figli destri prende 
  * il primo padre che ha il nodo come sinistro */

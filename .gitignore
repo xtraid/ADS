@@ -10,3 +10,7 @@ rot_test*
 *.swp
 .cache/
 compile_commands.json
+
+# binari di test
+tests/*_test
+*.out

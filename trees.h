@@ -14,8 +14,9 @@ typedef struct node{
 
 node * mkbst(int key, int value);
 int bst_insert(node *parent, int key, int value);
-int rm_leaf(node *leaf);
-node * find_successor(node * leaf);
+// int rm_leaf(node *leaf); should become private
+node *bst_drop_leaf(node *targhet);
+node *find_successor(node * leaf);
 int rm_bst_tree(node * leaf);
 
 int read_post_order(node * leaf);
