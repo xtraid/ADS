@@ -32,6 +32,13 @@ gstack * gstack_init(void){
   return s;
 }
 
+/*
+ * Capacity always starts at MIN_STACK_SIZE and changes only
+ * by powers of two (x2 on grow, /2 on shrink).
+ * Therefore, if capacity > MIN_STACK_SIZE, then capacity / 2
+ * is guaranteed to be >= MIN_STACK_SIZE.
+ */
+
 static int gstack_resize(gstack * s){
   if (!s)
     return -1;

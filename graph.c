@@ -6,17 +6,27 @@
 
 typedef struct ghash ghash;
 
+/*
+ * policy ownership of vertex:
+ * graph duild the vertex instance in memory
+ * graph forward the storage of the vertex to the hashmap
+ * graph is responsible of destroying vertex instance
+ *
+ */
 
 
 
 
 
+
+/* hashmap private struct  and constants */
 
 #define MIN_BUCKET_NUMBER 8
 #define MIN_BUCKET_SIZE 8
 #define HMAP_CONST 2654435761u
 #define MAX_LOAD_FACTOR 0.75
 #define MIN_LOAD_FACTOR 0.15
+
 typedef struct {
   uint32_t key;
   vertex *value;
@@ -49,12 +59,35 @@ static vertex * hmap_get (ghash *hmap, uint32_t key);
 static int entry_remove(ghash *hmap, uint32_t key);
 
 
+/*
+ * graph struct definition is opaque
+ * it preserve the manipulation of ownership of vertex.
+ *
+ * definition of private api and costant for  edge index and graph
+ */
 
+
+#define MIN_EDGE_SIZE 8
+
+typedef struct {
+  edge *index;
+  int cap;
+  int size;
+} eidx;
 
 struct graph {
     ghash *vertices;
+    eidx *edges;
 };
 
+/* api index */
+
+static eidx * eindex_init(void);
+static int eindex_drop(eidx *idx);
+static int eindex_resize(eidx *idx);
+static int eindex_bsearc (eidx *idx, edge item);
+static int eindex_insert (eidx *idx, edge item);
+static int eindex_delete(eidx *idx, edge item);
 
 graph *graph_init(void){
   graph *g = malloc(sizeof(graph));
@@ -67,14 +100,114 @@ graph *graph_init(void){
       free(g);
       return NULL;
   }
+  g->edges = eindex_init();
+  if (!g->edges){
+    free(g->vertices);
+    free(g);
+    return NULL;
+  }
   return g;
 }
+/*edges index helperx */
+static eidx *eindex_init(void){
+  eidx *idx = malloc(sizeof(eidx));
+  if(!idx){
+    perror("malloc");
+    return NULL;
+  }
+  idx->index = malloc(sizeof(edge) * MIN_EDGE_SIZE);
+  if(!idx){
+    perror("malloc");
+    free(idx);
+    return NULL;
+  }
+  idx->size = 0;
+  idx->cap = MIN_EDGE_SIZE;
+  return idx;
+}
 
+static int eindex_drop(eidx *idx){
+  if (!idx)
+    return -1;
+  free(idx->index);
+  free(idx);
+  return 0;
+}
 
+static int eindex_resize(eidx *idx){
+  if(!idx)
+    return -1;
+  int new_cap;
+  if(idx->cap == idx->size)
+    new_cap = idx->cap * 2;
+  else if (idx->cap >= 4 * idx->size && idx->cap > MIN_EDGE_SIZE)
+    new_cap = idx->cap / 2;
+  else
+      return 0;
+  edge *new_index = malloc (sizeof(edge) * new_cap);
+  if (!new_index){
+    perror("malloc");
+    return -2;
+  }
+  memcpy(new_index, idx->index, (size_t)idx->size * sizeof(edge));
+  free(idx->index);
+  idx->index = new_index;
+  idx->cap = new_cap;
+  return 0;
+}
 
+static int eindex_bsearc (eidx *idx, edge item){
+  if (!idx)
+    return -1;
+  int s = 0;
+  int n = idx->size;
+  int id = item.from->id;
+  while (s < n){
+    int m = s + ((n - s) / 2);
+    int lookup = idx->index[m].from->id;
+    if (lookup < id )
+      s = m + 1;
+    else if (lookup > id)
+      n = m; // lower bound :)
+    else if (idx->index[m].to->id < item.to->id) //found out that you can stack else if cool 
+      s = m + 1;
+    else
+      n = m;
+  }
+  return s;
+}
 
+static int eindex_insert (eidx *idx, edge item){
+  if (!idx)
+    return -1;
+  int pos = eindex_bsearc(idx, item);
+  if (pos < idx->size && idx->index[pos].from->id == item.from->id &&
+    idx->index[pos].to->id == item.to->id )
+    return -3;
+  if (idx->size == idx->cap){
+    int err = eindex_resize(idx);
+    if (err != 0)
+      return err;
+  }
+  memmove(&idx->index[pos + 1], &idx->index[pos], (idx->size - pos) * sizeof(edge)); // not that i cant wriet a helper but i  need to befriend wih library optimize functions and here semed the right spot
+  idx->index[pos] = item;
+  idx->size ++;
+  return 0;
+}
 
-/*hash map private helper */
+static int eindex_delete(eidx *idx, edge item){
+  if(!idx)
+    return -1;
+  int pos = eindex_bsearc(idx, item);
+  if( pos > idx->size || idx->index[pos].from->id != item.from->id ||
+    idx->index[pos].to->id != item.to->id )
+    return -3; // \not (a \land b) <=> \not a \lor \lnot b ty DeMorgan <3
+  memmove(&idx->index[pos], &idx->index[pos +1], (idx->size - pos -1) * sizeof(edge));
+  idx->size--;
+  return 0;
+}
+
+/* hash map private helper */
 
 /*
  * define struct hash map for storing the graph vertexes

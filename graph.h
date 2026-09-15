@@ -7,6 +7,14 @@
  * we define graphs as G : (V, E)
  * we'll make 3 separate abstractions: graph vertex and edges
  */
+
+
+/*
+ * in the end i decded that i want a redoundant
+ * description of edges: theyll be stored in a
+ * index owned by graph and each vertex point to outgoing edges
+ */
+
 typedef struct edge edge;
 
 typedef struct{
@@ -16,7 +24,7 @@ typedef struct{
 
 struct edge{
   vertex *to;
-  struct edge *next;
+  vertex *from;
 };
 
 typedef struct graph graph;
