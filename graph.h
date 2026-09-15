@@ -10,16 +10,14 @@
 
 
 /*
- * in the end i decded that i want a redoundant
  * description of edges: theyll be stored in a
- * index owned by graph and each vertex point to outgoing edges
+ * index owned by graph 
  */
 
 typedef struct edge edge;
 
 typedef struct{
   int id;
-  edge *adj;
 }vertex;
 
 struct edge{

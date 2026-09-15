@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <limits.h> // i nee a min :')
 
 typedef struct ghash ghash;
 
@@ -88,6 +89,7 @@ static int eindex_resize(eidx *idx);
 static int eindex_bsearc (eidx *idx, edge item);
 static int eindex_insert (eidx *idx, edge item);
 static int eindex_delete(eidx *idx, edge item);
+static int eindex_find_i (eidx *idx, vertex *node);
 
 graph *graph_init(void){
   graph *g = malloc(sizeof(graph));
@@ -206,6 +208,18 @@ static int eindex_delete(eidx *idx, edge item){
   idx->size--;
   return 0;
 }
+
+static int eindex_find_i (eidx *idx, vertex *node){
+  if(!idx || !node)
+    return -1;
+  vertex dummy;
+  dummy.id = INT_MIN;
+  edge item;
+  item.from = node;
+  item.to = &dummy;
+  return eindex_bsearc(idx, item);
+}
+
 
 /* hash map private helper */
 
