@@ -33,11 +33,12 @@ graph *graph_init(void);
 
 int graph_add_vertex(graph *g, int id);
 int graph_remove_vertex(graph *g, int id);
+int graph_drop(graph *g);
 
 int graph_add_edge(graph *g, int from, int to);
 int graph_remove_edge(graph *g, int from, int to);
 
-void graph_drop(graph *g);
+
 
 
 #endif

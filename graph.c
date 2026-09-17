@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <limits.h> // i nee a min :')
+#include <limits.h> // i nee min :')
 
 typedef struct ghash ghash;
 
@@ -110,6 +110,88 @@ graph *graph_init(void){
   }
   return g;
 }
+
+
+
+int graph_add_vertex(graph *g, int id){ // prety wrapper over the hashmap love to see it <3
+  if (!g)
+    return -1;
+  vertex *v = malloc(sizeof(*v));
+  if (!v){
+    perror("malloc");
+    return -1;
+  }
+  *v = (vertex){ .id = id }; // magical syntax 
+  int err = ghash_insert(g->vertices, (entry){.key = id, .value = v}); //more black magic
+  if (err != 0) {
+      free(v);
+      return err;
+  }
+  return 0;
+}
+
+
+int graph_drop(graph *g){
+  if(!g)
+    return -1;
+  int err = eindex_drop(g->edges);
+  if (err != 0)
+    return err;
+
+  err = drop_map(g->vertices);
+  if (err != 0)
+    return err;
+
+  free(g);
+  return 0;
+}
+
+int graph_remove_vertex(graph *g, int id){
+  if (!g)
+    return -1;
+  int err = entry_remove(g->vertices, (uint32_t)id);
+  return err;
+}
+
+
+int graph_add_edge(graph *g, int from, int to){ // very big abstraction here i take 2 int make a struct get of the pointers of the corresponding iont in the hashmap, but graph doesnt know or care cool
+  if (!g)
+    return -1;
+  vertex *vfrom = hmap_get(g->vertices, (uint32_t)from);
+  if (!vfrom)
+    return -2;
+  vertex *vto = hmap_get(g->vertices, (uint32_t)to);
+  if (!vto)
+    return -2;
+  edge item;
+  item.from = vfrom;
+  item.to = vto;
+  int err = eindex_insert(g->edges, item);
+  if (err != 0){
+    return err;
+  }
+  return 0;
+}
+
+
+int graph_remove_edge(graph *g, int from, int to){
+  if (!g)
+    return -1;
+  vertex *vfrom = hmap_get(g->vertices, (uint32_t)from);
+  if (!vfrom)
+    return -2;
+  vertex *vto = hmap_get(g->vertices, (uint32_t)to);
+  if (!vto)
+    return -2;
+  edge item;
+  item.from = vfrom;
+  item.to = vto;
+  int err = eindex_delete(g->edges, item);
+  return err;
+}
+
+
+
 /*edges index helperx */
 static eidx *eindex_init(void){
   eidx *idx = malloc(sizeof(eidx));
@@ -118,7 +200,7 @@ static eidx *eindex_init(void){
     return NULL;
   }
   idx->index = malloc(sizeof(edge) * MIN_EDGE_SIZE);
-  if(!idx){
+  if(!idx->index){
     perror("malloc");
     free(idx);
     return NULL;
@@ -201,7 +283,7 @@ static int eindex_delete(eidx *idx, edge item){
   if(!idx)
     return -1;
   int pos = eindex_bsearc(idx, item);
-  if( pos > idx->size || idx->index[pos].from->id != item.from->id ||
+  if( pos >= idx->size || idx->index[pos].from->id != item.from->id ||
     idx->index[pos].to->id != item.to->id )
     return -3; // \not (a \land b) <=> \not a \lor \lnot b ty DeMorgan <3
   memmove(&idx->index[pos], &idx->index[pos +1], (idx->size - pos -1) * sizeof(edge));
