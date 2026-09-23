@@ -91,6 +91,31 @@ static int eindex_insert (eidx *idx, edge item);
 static int eindex_delete(eidx *idx, edge item);
 static int eindex_find_i (eidx *idx, vertex *node);
 
+
+/*  graph private api */
+
+static int cascade_edges(graph *g, uint32_t key);
+
+
+/*we're doinga compact overwriting all the arch that contain the vertex*/
+static int cascade_edges(graph *g, uint32_t key){
+  if(!g)
+    return -1;
+  vertex * v = hmap_get(g->vertices, key); // i wrote this helper lets use it before start rewriting it huh
+  if (!v)
+    return -1;
+
+  int write = 0;
+  for (int read = 0; read< g->edges->size; read ++){
+    if (g->edges->index[read].from != v && g->edges->index[read].to != v ){
+      g->edges->index[write] = g->edges->index[read];
+      write ++;
+    }
+  }
+  g->edges->size = write;
+    return 0;
+}
+
 graph *graph_init(void){
   graph *g = malloc(sizeof(graph));
   if(!g){
@@ -146,11 +171,23 @@ int graph_drop(graph *g){
   return 0;
 }
 
+
+/*TODO refactor helpers to call 1 time the get*/
 int graph_remove_vertex(graph *g, int id){
   if (!g)
     return -1;
+  vertex * v = hmap_get(g->vertices, key); // i wrote this helper lets use it before start rewriting it huh
+  if (!v)
+    return -2;
+
+  int code = cascade_edges(g,id);
+  if (code != 0)
+    return code;
   int err = entry_remove(g->vertices, (uint32_t)id);
-  return err;
+  if(err <0)
+    return err;
+  free(v);
+  return 0;
 }
 
 
