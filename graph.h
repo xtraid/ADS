@@ -39,6 +39,8 @@ int graph_add_edge(graph *g, int from, int to);
 int graph_remove_edge(graph *g, int from, int to);
 
 
+edge * graph_find_i(const graph *g, int id);
+
 
 
 #endif

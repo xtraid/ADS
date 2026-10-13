@@ -176,7 +176,7 @@ int graph_drop(graph *g){
 int graph_remove_vertex(graph *g, int id){
   if (!g)
     return -1;
-  vertex * v = hmap_get(g->vertices, key); // i wrote this helper lets use it before start rewriting it huh
+  vertex * v = hmap_get(g->vertices, id); // i wrote this helper lets use it before start rewriting it huh
   if (!v)
     return -2;
 
@@ -328,6 +328,27 @@ static int eindex_delete(eidx *idx, edge item){
   return 0;
 }
 
+/* Returns the index of the first outgoing edge of the given vertex
+ * in the sorted edge array
+ */
+edge *graph_find_i(const graph *g, int id){
+    if (!g)
+        return NULL;
+
+    vertex *v = hmap_get(g->vertices, (uint32_t)id);
+    if (!v)
+        return NULL;
+
+    int i = eindex_find_i(g->edges, v);
+
+    if (i >= g->edges->size ||
+        g->edges->index[i].from != v)
+        return NULL;
+
+    return &g->edges->index[i];
+}
+
+
 static int eindex_find_i (eidx *idx, vertex *node){
   if(!idx || !node)
     return -1;
@@ -365,6 +386,9 @@ static int drop_map (ghash *hmap){
   if (!hmap)
     return -1;
   for(int i = 0;i < hmap->bucket_count; i++){
+    for(int j = 0;j < hmap->hashmap[i].size; j++){
+      free(hmap->hashmap[i].bucket[j].value);
+    }
     free(hmap->hashmap[i].bucket); // is 4 am and this thing is a trip i was confused if i had to free vertexes as well
   }
   free(hmap->hashmap);
