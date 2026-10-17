@@ -100,6 +100,87 @@ int gstack_drop (gstack *s){
   free(s);
   return 0;
 }
+// fast linked list
+
+
+typedef struct vlist{
+  vertex node;
+  struct vlist * next;
+}vlist;
+
+
+static vlist* vlist_init (vertex * v);
+static int v_insert (vlist *parent, vertex *v);
+static int vl_search (vlist *root, vertex * target);
+static vertex vl_pop (vlist *v);
+static int vl_drop (vlist *root);
+
+/*who calls it has the duty of saving root address*/
+static vlist *vlist_init (vertex * v){
+  if (!v)
+    return NULL;
+  vlist * root = malloc(sizeof(vlist));
+  if (!root){
+    perror("malloc");
+    return NULL;
+  }
+  root->node = *v;
+  root->next = NULL;
+  return root;
+}
+
+static int v_insert (vlist *parent, vertex *v){
+   if (!v || !parent)
+    return -1;
+  vlist *tmp = parent->next;
+  vlist *new_node = malloc(sizeof(vlist));
+  if (!new_node){
+    perror("malloc");
+    return -2;
+  }
+  new_node->node = *v;
+  new_node->next = tmp;
+  parent->next = new_node;
+  return 0;
+}
+
+static int vl_search (vlist *root, vertex * target){
+  if(!root || !target)
+    return -1;
+  int i = 0;
+  vlist *v = root;
+  while (v){
+    if (v->node.id == target->id)
+      return i;
+    i++;
+    v = v->next;
+  }
+  return -3;
+}
+
+static vertex vl_pop (vlist *v){
+  if (!v || !v->next)
+    return (vertex){0};
+  vertex pop = v->next->node;
+  vlist *tmp = v->next;
+  v->next = v->next->next;
+  free(tmp);
+  return pop;
+}
+
+static int vl_drop (vlist *root){
+  if (!root)
+    return -1;
+  while (root){
+    vlist *tmp = root;
+    root = root->next;
+    free(tmp);
+  }
+  return 0;
+}
+
+
+/*  dfs functions  */
 
 
 

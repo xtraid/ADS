@@ -328,7 +328,7 @@ static int eindex_delete(eidx *idx, edge item){
   return 0;
 }
 
-/* Returns the index of the first outgoing edge of the given vertex
+/* Returns the edge of the first outgoing edge of the given vertex
  * in the sorted edge array
  */
 edge *graph_find_i(const graph *g, int id){
@@ -348,6 +348,29 @@ edge *graph_find_i(const graph *g, int id){
     return &g->edges->index[i];
 }
 
+/* Returns the number of outgoing edges and sets out to the first one.
+ * The pointer remains valid until the edge array is modified.
+ */
+int graph_outgoing(graph *g, int id, edge **out){
+  if(!out)
+    return -1;
+  *out = NULL;
+  if (!g)
+    return -1;
+  vertex *v = hmap_get(g->vertices, (uint32_t)id);
+  if (!v)
+    return -2;
+  int i = eindex_find_i(g->edges, v);
+  if (i < 0 || i >= g->edges->size || g->edges->index[i].from != v)
+    return 0;
+  int count = 0;
+  while ( i + count < g->edges->size && g->edges->index[i + count].from == v)
+    count ++;
+  if (count > 0)
+    *out = &g->edges->index[i];
+  return count;
+
+}
 
 static int eindex_find_i (eidx *idx, vertex *node){
   if(!idx || !node)
@@ -471,7 +494,7 @@ static int hmap_resize (ghash * hmap){
   double alpha = (double)(hmap->total_entries + 1) / hmap->bucket_count;
   if (alpha >= MAX_LOAD_FACTOR){
     new_total = hmap->bucket_count * 2;
-   new_map = calloc(new_total, sizeof(gbucket));// were risking ub when free if errors occur
+    new_map = calloc(new_total, sizeof(gbucket));// were risking ub when free if errors occur
     if (!new_map){
       perror("calloc");
       return -2;

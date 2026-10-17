@@ -40,6 +40,7 @@ int graph_remove_edge(graph *g, int from, int to);
 
 
 edge * graph_find_i(const graph *g, int id);
+int graph_outgoing(graph *g, int id, edge **out);
 
 
 
